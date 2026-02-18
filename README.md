@@ -1,2 +1,2 @@
 # Moex-Cyberdeck
-MOEX CYBERDECK // TERMINAL - Moes iss
+MOEX CYBERDECK // TERMINAL - Moex iss
