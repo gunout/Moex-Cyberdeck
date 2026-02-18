@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOEX PRO CHART v3.0 // GRAPHIQUE AMÉLIORÉ</title>
+    <title>MOEX PRO CHART v3.2 // GRAPHIQUE CORRIGÉ</title>
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -109,6 +109,7 @@
             flex-direction: column;
             height: 100%;
             background: #0B0E14;
+            overflow: hidden;
         }
 
         .chart-header {
@@ -117,6 +118,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .chart-title {
@@ -158,6 +160,7 @@
             padding: 16px;
             background: #14181F;
             border-bottom: 1px solid #2A2F38;
+            flex-shrink: 0;
         }
 
         .stat-item {
@@ -178,18 +181,23 @@
             font-weight: 600;
         }
 
-        /* Chart Container */
+        /* Chart Container - HAUTEUR FIXE */
         .chart-container {
             flex: 1;
+            min-height: 0; /* Important pour le flex */
             padding: 16px;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         #chart {
             width: 100%;
             height: 100%;
+            min-height: 300px;
             border-radius: 8px;
             overflow: hidden;
+            background: #0B0E14;
         }
 
         /* Timeframe Selector */
@@ -199,6 +207,7 @@
             padding: 12px 16px;
             background: #14181F;
             border-top: 1px solid #2A2F38;
+            flex-shrink: 0;
         }
 
         .timeframe-btn {
@@ -286,6 +295,32 @@
             line-height: 1.4;
         }
 
+        /* Volume Legend */
+        .volume-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #6B7280;
+            flex-shrink: 0;
+        }
+        
+        .volume-up {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .volume-up::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #3B82F6;
+            opacity: 0.7;
+            border-radius: 2px;
+        }
+
         /* Utilities */
         .text-green { color: #10B981; }
         .text-red { color: #EF4444; }
@@ -355,6 +390,9 @@
 
             <div class="chart-container">
                 <div id="chart"></div>
+                <div class="volume-legend">
+                    <span class="volume-up">Volume</span>
+                </div>
             </div>
 
             <div class="timeframe-selector">
@@ -417,13 +455,13 @@
         };
 
         // ==========================================
-        // GRAPHIQUE AMÉLIORÉ
+        // GRAPHIQUE AVEC ÉCHELLE CORRIGÉE
         // ==========================================
 
         function initChart() {
             const container = document.getElementById('chart');
             
-            // Création du graphique avec options améliorées
+            // Création du graphique avec options d'échelle optimisées
             state.chart = LightweightCharts.createChart(container, {
                 width: container.clientWidth,
                 height: container.clientHeight,
@@ -434,14 +472,8 @@
                     fontSize: 11,
                 },
                 grid: {
-                    vertLines: {
-                        color: '#1E242C',
-                        style: 1,
-                    },
-                    horzLines: {
-                        color: '#1E242C',
-                        style: 1,
-                    },
+                    vertLines: { color: '#1E242C' },
+                    horzLines: { color: '#1E242C' },
                 },
                 crosshair: {
                     mode: LightweightCharts.CrosshairMode.Normal,
@@ -460,19 +492,23 @@
                 },
                 rightPriceScale: {
                     borderColor: '#2A2F38',
-                    borderVisible: true,
                     scaleMargins: {
-                        top: 0.1,
-                        bottom: 0.2,
+                        top: 0.1,      // 10% d'espace en haut
+                        bottom: 0.2,    // 20% d'espace en bas pour les volumes
                     },
+                    autoScale: true,    // Échelle automatique
+                    entireTextOnly: false,
+                },
+                leftPriceScale: {
+                    visible: false,
                 },
                 timeScale: {
                     borderColor: '#2A2F38',
-                    borderVisible: true,
                     timeVisible: true,
                     secondsVisible: false,
                     fixLeftEdge: true,
                     fixRightEdge: true,
+                    lockVisibleTimeRangeOnResize: true,
                 },
                 handleScale: {
                     axisPressedMouseMove: true,
@@ -485,7 +521,7 @@
                 },
             });
 
-            // Série des bougies (main chart)
+            // Série des bougies (prix)
             state.candleSeries = state.chart.addCandlestickSeries({
                 upColor: '#10B981',
                 downColor: '#EF4444',
@@ -493,43 +529,57 @@
                 borderDownColor: '#EF4444',
                 wickUpColor: '#10B981',
                 wickDownColor: '#EF4444',
-                borderVisible: true,
-                wickVisible: true,
                 priceLineVisible: true,
                 lastValueVisible: true,
                 priceLineColor: '#3B82F6',
                 priceLineStyle: 2,
+                priceFormat: {
+                    type: 'price',
+                    precision: 2,
+                    minMove: 0.01,
+                },
             });
 
-            // Série des volumes (en bas)
+            // Série des volumes (en bas, avec échelle séparée)
             state.volumeSeries = state.chart.addHistogramSeries({
                 color: '#3B82F6',
                 priceFormat: {
                     type: 'volume',
                 },
-                priceScaleId: '',
+                priceScaleId: 'volume-scale', // Échelle séparée pour les volumes
+                scaleMargins: {
+                    top: 0.8,  // Les volumes commencent à 80% du haut
+                    bottom: 0,   // Jusqu'en bas
+                },
+                priceLineVisible: false,
+                lastValueVisible: false,
+            });
+
+            // Configurer l'échelle des volumes
+            state.chart.priceScale('volume-scale').applyOptions({
                 scaleMargins: {
                     top: 0.8,
                     bottom: 0,
                 },
-                priceLineVisible: false,
-                lastValueVisible: false,
+                borderVisible: false,
+                autoScale: true,
             });
 
             // Gestionnaire de redimensionnement
             new ResizeObserver(() => {
                 const { width, height } = container.getBoundingClientRect();
                 state.chart.applyOptions({ width, height });
+                state.chart.timeScale().fitContent();
             }).observe(container);
         }
 
         // ==========================================
-        // GÉNÉRATION DE DONNÉES AVANCÉES
+        // GÉNÉRATION DE DONNÉES
         // ==========================================
 
         function generateChartData(ticker, timeframe) {
             const now = new Date();
-            let data = [];
+            let candleData = [];
             let volumeData = [];
             
             // Définir le nombre de points selon la période
@@ -537,7 +587,7 @@
             let interval = 24 * 60 * 60; // 1 jour en secondes
             
             switch(timeframe) {
-                case '1D': points = 24; interval = 60 * 60; break; // 24 heures
+                case '1D': points = 24; interval = 60 * 60; break;
                 case '1W': points = 7; interval = 24 * 60 * 60; break;
                 case '1M': points = 30; interval = 24 * 60 * 60; break;
                 case '3M': points = 90; interval = 24 * 60 * 60; break;
@@ -561,7 +611,9 @@
             };
             
             let price = basePrices[ticker] || 1000;
-            let trend = Math.random() * 0.2 - 0.1; // Tendance aléatoire
+            let minPrice = price;
+            let maxPrice = price;
+            let trend = Math.random() * 0.2 - 0.1;
             
             for (let i = points; i >= 0; i--) {
                 const time = Math.floor(now.getTime() / 1000) - (i * interval);
@@ -574,9 +626,16 @@
                 const close = price + change;
                 const high = Math.max(open, close) * (1 + Math.random() * 0.01);
                 const low = Math.min(open, close) * (1 - Math.random() * 0.01);
-                const volume = Math.floor(Math.random() * 10000000) + 1000000;
                 
-                data.push({
+                // Mettre à jour les min/max pour l'échelle
+                minPrice = Math.min(minPrice, low);
+                maxPrice = Math.max(maxPrice, high);
+                
+                // Volume proportionnel à l'activité
+                const volumeBase = Math.abs(change / price) * 50000000;
+                const volume = Math.max(100000, Math.floor(volumeBase + Math.random() * 10000000));
+                
+                candleData.push({
                     time: time,
                     open: open,
                     high: high,
@@ -587,13 +646,13 @@
                 volumeData.push({
                     time: time,
                     value: volume,
-                    color: close >= open ? '#10B981' : '#EF4444'
+                    color: '#3B82F6'
                 });
                 
                 price = close;
             }
             
-            return { candles: data, volumes: volumeData };
+            return { candles: candleData, volumes: volumeData };
         }
 
         function updateChart(ticker, timeframe) {
@@ -602,7 +661,7 @@
             state.candleSeries.setData(candles);
             state.volumeSeries.setData(volumes);
             
-            // Ajuster l'échelle
+            // Ajuster l'échelle pour bien voir les prix et volumes
             state.chart.timeScale().fitContent();
         }
 
@@ -637,7 +696,7 @@
         }
 
         // ==========================================
-        // CARNET D'ORDRES AMÉLIORÉ
+        // CARNET D'ORDRES
         // ==========================================
 
         function renderOrderbook(ticker) {
@@ -647,7 +706,7 @@
             let asks = '';
             let bids = '';
             
-            // Ventes (asks) - de haut en bas
+            // Ventes (asks)
             for (let i = 5; i >= 1; i--) {
                 const price = basePrice + (i * 2);
                 const volume = Math.floor(Math.random() * 50000) + 5000;
@@ -668,7 +727,7 @@
             // Spread
             const spread = '<div style="text-align:center; padding:10px; background:#1E242C; margin:10px 0; border-radius:4px; color:#3B82F6;">SPREAD</div>';
             
-            // Achats (bids) - de haut en bas
+            // Achats (bids)
             for (let i = 1; i <= 5; i++) {
                 const price = basePrice - (i * 2);
                 const volume = Math.floor(Math.random() * 50000) + 5000;
@@ -697,7 +756,7 @@
             const news = [
                 { date: '2024-01-15', title: 'MOEX: Augmentation des volumes de trading de 15%' },
                 { date: '2024-01-14', title: 'Sberbank annonce un dividende exceptionnel' },
-                { date: '2024-01-13', title: 'Gazpotm: Nouveau record de production' },
+                { date: '2024-01-13', title: 'Gazprom: Nouveau record de production' },
                 { date: '2024-01-12', title: 'Lukoil maintient ses investissements' },
                 { date: '2024-01-11', title: 'Norilsk Nickel: Demande soutenue' },
                 { date: '2024-01-10', title: 'Yandex en hausse après ses résultats' }
@@ -756,7 +815,7 @@
             updateChart(ticker, state.currentTimeframe);
             updateStats(ticker);
             renderOrderbook(ticker);
-            renderWatchlist(); // Re-render pour mettre à jour la classe active
+            renderWatchlist();
         }
 
         // ==========================================
@@ -766,13 +825,11 @@
         function setupTimeframes() {
             document.querySelectorAll('.timeframe-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    // Mise à jour des classes actives
                     document.querySelectorAll('.timeframe-btn').forEach(b => 
                         b.classList.remove('active')
                     );
                     e.target.classList.add('active');
                     
-                    // Mise à jour du timeframe
                     state.currentTimeframe = e.target.dataset.timeframe;
                     updateChart(state.currentTicker, state.currentTimeframe);
                 });
