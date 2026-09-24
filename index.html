@@ -63,7 +63,6 @@ body{
 ::-webkit-scrollbar-track{background:#000}
 ::-webkit-scrollbar-thumb{background:var(--neon-cyan);border-radius:3px;box-shadow:0 0 5px var(--neon-cyan)}
 
-/* Watchlist */
 .watchlist-item{
   display:flex;justify-content:space-between;align-items:center;
   padding:12px;border-radius:4px;cursor:pointer;
@@ -85,7 +84,6 @@ body{
 .watchlist-price{font-weight:700;font-size:15px;color:#fff}
 .watchlist-change{font-size:12px;text-align:right;margin-top:2px}
 
-/* Chart area */
 .chart-area{
   display:flex;flex-direction:column;height:100%;
   background:linear-gradient(180deg,rgba(5,5,5,0.8) 0%,rgba(10,20,30,0.9) 100%);
@@ -103,7 +101,6 @@ body{
 .current-price{font-size:32px;font-weight:700;color:#fff;text-shadow:0 0 15px rgba(255,255,255,0.2)}
 .price-change{font-size:14px;margin-top:5px;font-weight:600}
 
-/* Stats */
 .stats-grid{
   display:grid;grid-template-columns:repeat(4,1fr);gap:15px;
   padding:20px;background:rgba(0,243,255,0.03);
@@ -121,7 +118,6 @@ body{
 .stat-label{color:var(--text-dim);font-size:10px;text-transform:uppercase;margin-bottom:8px;letter-spacing:1px}
 .stat-value{font-size:20px;font-weight:700;font-family:var(--font-data);color:#fff}
 
-/* Chart container */
 .chart-container{
   flex:1;min-height:0;padding:10px;position:relative;
   display:flex;flex-direction:column;
@@ -132,7 +128,6 @@ body{
   box-shadow:inset 0 0 50px rgba(0,0,0,0.8);
 }
 
-/* Timeframe */
 .timeframe-selector{
   display:flex;gap:10px;padding:15px 20px;
   background:rgba(0,0,0,0.6);
@@ -156,7 +151,6 @@ body{
   text-shadow:0 0 5px var(--neon-cyan);
 }
 
-/* Orderbook */
 .orderbook-row{
   display:flex;justify-content:space-between;align-items:center;
   padding:8px 10px;font-family:var(--font-data);font-size:12px;
@@ -174,7 +168,6 @@ body{
 .bid-price{color:var(--neon-green);font-weight:700;text-shadow:0 0 5px var(--neon-green)}
 .ask-price{color:var(--neon-red);font-weight:700;text-shadow:0 0 5px var(--neon-red)}
 
-/* News */
 .news-item{
   padding:15px;border-bottom:1px solid rgba(255,255,255,0.05);
   cursor:pointer;transition:background 0.2s;
@@ -189,7 +182,6 @@ body{
 }
 .news-title{font-size:12px;line-height:1.5;color:#d1d5db}
 
-/* Legend */
 .volume-legend{
   display:flex;gap:16px;margin-top:8px;font-size:11px;
   color:var(--text-dim);flex-shrink:0;
@@ -200,7 +192,6 @@ body{
   background:var(--neon-cyan);opacity:0.7;border-radius:2px;
 }
 
-/* Utils */
 .text-green{color:var(--neon-green);text-shadow:0 0 5px var(--neon-green)}
 .text-red{color:var(--neon-red);text-shadow:0 0 5px var(--neon-red)}
 .text-cyan{color:var(--neon-cyan);text-shadow:0 0 5px var(--neon-cyan)}
@@ -214,7 +205,6 @@ body{
 .blink{animation:blinker 1.5s linear infinite}
 @keyframes blinker{50%{opacity:0.3}}
 
-/* Status bar */
 .status-bar{
   position:fixed;bottom:0;left:300px;right:340px;
   padding:4px 12px;background:rgba(0,0,0,0.9);
@@ -230,7 +220,6 @@ body{
 .status-dot.error{background:var(--neon-red);box-shadow:0 0 6px var(--neon-red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* Responsive */
 @media (max-width:1100px){
   .app{grid-template-columns:250px 1fr 280px}
   .status-bar{left:250px;right:280px}
@@ -343,6 +332,7 @@ body{
 /* ============================================================
    MOEX CYBERDECK v3.1
    Données réelles via API publique MOEX ISS (différées 15 min)
+   Proxy : https://moex.gunout.workers.dev/
    ============================================================ */
 
 /* ---------- CONFIG ---------- */
@@ -359,12 +349,11 @@ const TICKERS = [
   { symbol:'PLZL', name:'Polyus' }
 ];
 
-// Proxy CORS public pour la démo.
-// ⚠️ EN PRODUCTION : remplacez par votre propre backend.
-const CORS_PROXY = 'https://corsproxy.io/?';
+// Proxy CORS personnel (Cloudflare Worker)
+const CORS_PROXY = 'https://moex.gunout.workers.dev/?url=';
 const MOEX_BASE  = 'https://iss.moex.com/iss';
 
-// interval MOEX: 1=1min, 10=10min, 60=1h, 24=1jour, 7=1sem, 31=1mois
+// interval MOEX: 1=1min, 10=10min, 60=1h, 24=1jour
 const TIMEFRAME_MAP = {
   '1D':  { interval: 10, days: 1   },
   '1W':  { interval: 60, days: 7   },
@@ -417,6 +406,7 @@ async function fetchCandles(ticker, interval, from, till){
   const res = await fetch(CORS_PROXY + encodeURIComponent(url));
   if(!res.ok) throw new Error('HTTP '+res.status);
   const json = await res.json();
+  if(!json.candles) throw new Error('Réponse invalide');
   const { columns, data } = json.candles;
   return data.map(row=>{
     const o = {};
@@ -439,6 +429,7 @@ async function fetchQuote(ticker){
   const json = await res.json();
 
   const md = json.marketdata;
+  if(!md || !md.data || md.data.length===0) throw new Error('Pas de marketdata');
   const mdObj = {};
   md.columns.forEach((c,i)=> mdObj[c]=md.data[0][i]);
 
@@ -725,9 +716,9 @@ async function renderOrderbook(ticker){
 function renderNews(){
   const news = [
     { date:'LIVE', title:'Flux MOEX ISS connecté — données différées 15 min' },
-    { date:'INFO', title:'Pour du vrai temps réel : API ALGOPACK ou MOEX authentifiée' },
+    { date:'PROXY', title:'Cloudflare Worker : moex.gunout.workers.dev' },
     { date:'INFO', title:'MOEX ISS API : iss.moex.com — documentation publique' },
-    { date:'INFO', title:'Remplacer le proxy CORS public par un backend en production' }
+    { date:'INFO', title:'Déployé sur GitHub Pages' }
   ];
   document.getElementById('news').innerHTML = news.map(n=>`
     <div class="news-item">
