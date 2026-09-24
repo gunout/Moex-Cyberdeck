@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MOEX CYBERDECK v4.1 // MOSCOW EXCHANGE</title>
+<title>MOEX CYBERDECK v7.0 // MOSCOW EXCHANGE</title>
 
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -21,10 +21,17 @@
   --neon-green:#00ff9d;
   --neon-red:#ff0055;
   --neon-magenta:#ff00ff;
+  --neon-orange:#ff8c00;
   --text-main:#e0f7fa;
   --text-dim:#5c7c8a;
   --font-display:'Orbitron',sans-serif;
   --font-data:'JetBrains Mono',monospace;
+}
+body.light-mode{
+  --bg-deep:#f0f4ff;
+  --bg-panel:rgba(255,255,255,0.92);
+  --text-main:#0a1a3a;
+  --text-dim:#5c7c9a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -32,6 +39,7 @@ body{
   color:var(--text-main);
   font-family:var(--font-display);
   height:100vh;overflow:hidden;
+  transition:background 0.4s;
   background-image:
     radial-gradient(circle at 15% 15%, rgba(213,43,30,0.08) 0%, transparent 45%),
     radial-gradient(circle at 85% 85%, rgba(0,57,166,0.10) 0%, transparent 45%),
@@ -124,6 +132,10 @@ body{
   border-left-color:var(--neon-gold);
   box-shadow:0 0 15px rgba(255,215,0,0.15);
 }
+.watchlist-item.compared{
+  background:linear-gradient(90deg, rgba(255,0,255,0.12), rgba(255,215,0,0.08));
+  border-left-color:var(--neon-magenta);
+}
 .watchlist-item.alert{animation:alertPulse 1.5s infinite}
 @keyframes alertPulse{
   0%,100%{background:rgba(255,0,85,0.05)}
@@ -133,6 +145,21 @@ body{
 .watchlist-name{font-size:10px;color:var(--text-dim);margin-top:3px;text-transform:uppercase;letter-spacing:0.5px}
 .watchlist-price{font-weight:700;font-size:13px;color:#fff;font-family:var(--font-data)}
 .watchlist-change{font-size:11px;text-align:right;margin-top:2px;font-family:var(--font-data)}
+
+.compare-check{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:3px;
+  border:1px solid rgba(0,243,255,0.4);
+  margin-right:6px;cursor:pointer;
+  font-size:10px;color:transparent;
+  transition:all 0.2s;vertical-align:middle;
+}
+.compare-check:hover{border-color:var(--neon-magenta);box-shadow:0 0 6px rgba(255,0,255,0.4)}
+.compare-check.checked{
+  background:var(--neon-magenta);border-color:var(--neon-magenta);
+  color:#fff;box-shadow:0 0 8px var(--neon-magenta);
+}
+.compare-check.disabled{opacity:0.3;cursor:not-allowed}
 
 .sector-badge{
   display:inline-block;
@@ -190,6 +217,48 @@ body{
 .signal-sell{background:rgba(255,0,85,0.2);color:#ff0055;border:1px solid #ff0055;text-shadow:0 0 6px #ff0055}
 .signal-hold{background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700}
 
+.header-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{
+  background:rgba(0,0,0,0.5);border:1px solid rgba(0,243,255,0.3);
+  color:var(--neon-cyan);width:34px;height:34px;border-radius:5px;
+  cursor:pointer;transition:all 0.2s;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover{
+  border-color:var(--neon-gold);color:var(--neon-gold);
+  box-shadow:0 0 10px rgba(255,215,0,0.3);
+}
+.icon-btn.active{background:rgba(255,0,255,0.2);border-color:var(--neon-magenta);color:var(--neon-magenta)}
+
+/* Barre de comparaison */
+.compare-bar{
+  padding:8px 16px;
+  background:rgba(255,0,255,0.08);
+  border-bottom:1px solid rgba(255,0,255,0.3);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-family:var(--font-data);font-size:11px;
+  flex-shrink:0;min-height:0;transition:all 0.3s;
+}
+.compare-bar.hidden{display:none}
+.compare-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:20px;
+  background:rgba(255,0,255,0.15);
+  border:1px solid var(--neon-magenta);
+  color:#fff;font-weight:700;letter-spacing:1px;
+  box-shadow:0 0 8px rgba(255,0,255,0.3);
+}
+.compare-chip .dot{
+  width:10px;height:10px;border-radius:50%;
+  box-shadow:0 0 6px currentColor;
+}
+.compare-chip button{
+  background:none;border:none;color:#fff;cursor:pointer;
+  font-size:14px;line-height:1;padding:0 2px;
+}
+.compare-chip button:hover{color:var(--neon-red)}
+.compare-info{color:var(--text-dim);font-size:10px;letter-spacing:1px;text-transform:uppercase}
+
 .stats-grid{
   display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
   padding:18px 20px;background:rgba(0,243,255,0.03);
@@ -220,6 +289,49 @@ body{
   width:100%;height:100%;min-height:300px;
   border-radius:8px;overflow:hidden;
   box-shadow:inset 0 0 50px rgba(0,0,0,0.8);
+}
+
+/* Volume Profile */
+.vol-profile{
+  position:absolute;
+  top:10px;bottom:10px;right:10px;
+  width:100px;
+  pointer-events:none;
+  z-index:4;
+  display:none;
+}
+.vol-profile.active{display:block}
+.vol-profile-row{
+  position:absolute;
+  right:0;
+  height:6px;
+  background:linear-gradient(90deg, rgba(0,243,255,0.15), rgba(0,243,255,0.7));
+  border-radius:2px;
+  box-shadow:0 0 6px rgba(0,243,255,0.5);
+  transition:width 0.3s;
+}
+.vol-profile-row.poc{
+  background:linear-gradient(90deg, rgba(255,215,0,0.4), rgba(255,215,0,1));
+  box-shadow:0 0 10px var(--neon-gold);
+  height:8px;
+}
+.vol-profile-legend{
+  position:absolute;
+  top:-20px;right:0;
+  font-family:var(--font-data);
+  font-size:9px;
+  color:var(--neon-cyan);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.vol-profile-label{
+  position:absolute;
+  right:105px;
+  font-family:var(--font-data);
+  font-size:9px;
+  color:var(--text-dim);
+  white-space:nowrap;
+  transform:translateY(-50%);
 }
 
 .chart-overlay{
@@ -315,7 +427,6 @@ body{
   text-shadow:0 0 5px var(--neon-gold);
 }
 
-/* ====== INDICATORS LEGEND (MA, MAD) ====== */
 .indicators-bar{
   display:flex;
   gap:14px;
@@ -363,8 +474,46 @@ body{
 .indicator-dot.ma50{background:var(--neon-gold);box-shadow:0 0 6px var(--neon-gold)}
 .indicator-dot.ma200{background:var(--neon-magenta);box-shadow:0 0 6px var(--neon-magenta)}
 .indicator-dot.mad{background:#ff8c00;box-shadow:0 0 6px #ff8c00}
+.indicator-dot.bb{background:#a020f0;box-shadow:0 0 6px #a020f0}
+.indicator-dot.rsi{background:#00ffff;box-shadow:0 0 6px #00ffff}
+.indicator-dot.macd{background:#ff6b6b;box-shadow:0 0 6px #ff6b6b}
+.indicator-dot.volprofile{background:linear-gradient(90deg,var(--neon-cyan),var(--neon-gold))}
 
-/* Orderbook */
+.alert-panel{
+  padding:12px;
+  background:rgba(0,0,0,0.4);
+  border-bottom:1px solid rgba(0,243,255,0.2);
+}
+.alert-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.alert-row input{
+  flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(0,243,255,0.3);
+  color:#fff;padding:6px 8px;border-radius:3px;font-family:var(--font-data);font-size:11px;
+}
+.alert-row select{
+  background:rgba(0,0,0,0.5);border:1px solid rgba(0,243,255,0.3);
+  color:#fff;padding:6px 8px;border-radius:3px;font-family:var(--font-data);font-size:11px;
+}
+.alert-row button{
+  background:linear-gradient(135deg,var(--ru-blue),var(--neon-gold));
+  border:none;color:#fff;padding:6px 12px;border-radius:3px;
+  cursor:pointer;font-family:var(--font-display);font-size:10px;
+  font-weight:700;letter-spacing:1px;
+}
+.alert-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 10px;background:rgba(0,243,255,0.08);
+  border-left:3px solid var(--neon-gold);border-radius:3px;
+  margin-bottom:5px;font-size:11px;font-family:var(--font-data);
+}
+.alert-item.triggered{
+  background:rgba(255,0,85,0.15);border-left-color:var(--neon-red);
+  animation:alertPulse 1.5s infinite;
+}
+.alert-item button{
+  background:none;border:none;color:var(--neon-red);
+  cursor:pointer;font-size:14px;padding:0 5px;
+}
+
 .orderbook-row{
   display:flex;justify-content:space-between;align-items:center;
   padding:7px 10px;font-family:var(--font-data);font-size:12px;
@@ -392,20 +541,6 @@ body{
   display:flex;align-items:center;gap:5px;
 }
 .news-title{font-size:11.5px;line-height:1.5;color:#c8d8f0}
-
-.volume-legend{
-  display:flex;gap:14px;margin-top:6px;font-size:10px;
-  color:var(--text-dim);flex-shrink:0;flex-wrap:wrap;
-}
-.legend-item{display:flex;align-items:center;gap:5px}
-.legend-item::before{
-  content:'';display:inline-block;width:12px;height:3px;border-radius:2px;
-}
-.legend-item.volume::before{height:12px;background:linear-gradient(135deg, var(--ru-blue), var(--ru-red));opacity:0.8}
-.legend-item.ma20::before{background:var(--neon-cyan);box-shadow:0 0 5px var(--neon-cyan)}
-.legend-item.ma50::before{background:var(--neon-gold);box-shadow:0 0 5px var(--neon-gold)}
-.legend-item.ma200::before{background:var(--neon-magenta);box-shadow:0 0 5px var(--neon-magenta)}
-.legend-item.mad::before{background:#ff8c00;box-shadow:0 0 5px #ff8c00}
 
 .text-green{color:var(--neon-green);text-shadow:0 0 5px var(--neon-green)}
 .text-red{color:var(--neon-red);text-shadow:0 0 5px var(--neon-red)}
@@ -444,9 +579,26 @@ body{
   letter-spacing:1px;
 }
 
+/* Toasts */
+.toast-container{position:fixed;top:80px;right:360px;z-index:1000;display:flex;flex-direction:column;gap:10px}
+.toast{
+  background:linear-gradient(135deg,rgba(0,57,166,0.95),rgba(213,43,30,0.85));
+  color:#fff;padding:12px 18px;border-radius:6px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  font-family:var(--font-data);font-size:12px;
+  display:flex;align-items:center;gap:10px;
+  animation:slideIn 0.3s ease;min-width:250px;max-width:350px;
+}
+.toast.success{background:linear-gradient(135deg,rgba(0,255,157,0.9),rgba(0,243,255,0.9))}
+.toast.warning{background:linear-gradient(135deg,rgba(255,215,0,0.95),rgba(255,140,0,0.95))}
+.toast.danger{background:linear-gradient(135deg,rgba(255,0,85,0.9),rgba(160,0,60,0.9))}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
 @media (max-width:1200px){
   .app{grid-template-columns:280px 1fr 300px}
   .status-bar{left:280px;right:300px}
+  .toast-container{right:320px}
+  .vol-profile{width:70px}
 }
 @media (max-width:900px){
   .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
@@ -457,6 +609,8 @@ body{
   .current-price{font-size:22px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .indicators-bar{font-size:9px;gap:8px}
+  .toast-container{right:10px}
+  .vol-profile{display:none !important}
 }
 </style>
 </head>
@@ -489,6 +643,22 @@ body{
         Initialisation...
       </div>
     </div>
+
+    <div class="panel-header" style="border-top:1px solid rgba(0,243,255,0.2)">
+      <span><i class="fas fa-bell" style="margin-right:8px;color:var(--neon-gold)"></i>Alertes prix</span>
+      <span style="font-size:10px;color:var(--text-dim)" id="alertCount">0</span>
+    </div>
+    <div class="alert-panel">
+      <div class="alert-row">
+        <input type="number" id="alertPrice" placeholder="Prix" step="0.01">
+        <select id="alertCondition">
+          <option value=">">≥</option>
+          <option value="<">≤</option>
+        </select>
+        <button id="addAlertBtn"><i class="fas fa-plus"></i> AJOUTER</button>
+      </div>
+      <div id="alertList"></div>
+    </div>
   </div>
 
   <!-- Center: Chart -->
@@ -501,11 +671,32 @@ body{
           <div class="chart-sector" id="chartSector">FINANCE · TQBR</div>
         </div>
       </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="compareModeBtn" title="Mode comparaison (cliquer sur les cases à gauche)">
+          <i class="fas fa-layer-group"></i>
+        </button>
+        <button class="icon-btn" id="volProfileBtn" title="Volume Profile">
+          <i class="fas fa-chart-bar"></i>
+        </button>
+        <button class="icon-btn" id="exportCsvBtn" title="Export CSV">
+          <i class="fas fa-download"></i>
+        </button>
+        <button class="icon-btn" id="themeToggleBtn" title="Mode clair/sombre">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
       <div class="chart-price">
         <div class="current-price" id="currentPrice">---</div>
         <div class="price-change" id="priceChange">---</div>
         <div><span class="signal-badge signal-hold" id="signalBadge">HOLD</span></div>
       </div>
+    </div>
+
+    <!-- Barre de comparaison -->
+    <div class="compare-bar hidden" id="compareBar">
+      <span class="compare-info"><i class="fas fa-layer-group"></i> COMPARAISON (base 100)</span>
+      <div id="compareChips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <span class="compare-info" style="margin-left:auto">Max 3 titres</span>
     </div>
 
     <div class="stats-grid">
@@ -527,24 +718,26 @@ body{
       </div>
     </div>
 
-    <!-- Indicators bar -->
     <div class="indicators-bar">
-      <div class="indicator-toggle active" id="toggleMA20" data-indicator="ma20">
-        <span class="indicator-dot ma20"></span> MA20
-      </div>
-      <div class="indicator-toggle active" id="toggleMA50" data-indicator="ma50">
-        <span class="indicator-dot ma50"></span> MA50
-      </div>
-      <div class="indicator-toggle active" id="toggleMA200" data-indicator="ma200">
-        <span class="indicator-dot ma200"></span> MA200
-      </div>
-      <div class="indicator-toggle" id="toggleMAD" data-indicator="mad">
-        <span class="indicator-dot mad"></span> MAD20
-      </div>
+      <div class="indicator-toggle active" data-indicator="ma20"><span class="indicator-dot ma20"></span> MA20</div>
+      <div class="indicator-toggle active" data-indicator="ma50"><span class="indicator-dot ma50"></span> MA50</div>
+      <div class="indicator-toggle active" data-indicator="ma200"><span class="indicator-dot ma200"></span> MA200</div>
+      <div class="indicator-toggle" data-indicator="bb"><span class="indicator-dot bb"></span> BB</div>
+      <div class="indicator-toggle" data-indicator="mad"><span class="indicator-dot mad"></span> MAD20</div>
+      <div class="indicator-toggle" data-indicator="rsi"><span class="indicator-dot rsi"></span> RSI</div>
+      <div class="indicator-toggle" data-indicator="macd"><span class="indicator-dot macd"></span> MACD</div>
+      <div class="indicator-toggle" data-indicator="volprofile"><span class="indicator-dot volprofile"></span> VOL PROFILE</div>
     </div>
 
     <div class="chart-container">
       <div id="chart"></div>
+
+      <!-- Volume Profile Overlay -->
+      <div class="vol-profile" id="volProfile">
+        <div class="vol-profile-legend">VOL PROFILE</div>
+        <div id="volProfileRows"></div>
+      </div>
+
       <div class="chart-overlay" id="chartOverlay">
         <div class="chart-overlay-content">
           <i class="fas fa-circle-notch fa-spin"></i>
@@ -558,13 +751,6 @@ body{
       <button class="chart-reset-btn" id="chartResetBtn">
         <i class="fas fa-crosshairs"></i> RESET ZOOM
       </button>
-      <div class="volume-legend">
-        <span class="legend-item volume">Volume</span>
-        <span class="legend-item ma20">MA20</span>
-        <span class="legend-item ma50">MA50</span>
-        <span class="legend-item ma200">MA200</span>
-        <span class="legend-item mad">MAD20</span>
-      </div>
     </div>
 
     <div class="timeframe-selector">
@@ -604,6 +790,8 @@ body{
   </div>
 </div>
 
+<div class="toast-container" id="toastContainer"></div>
+
 <div class="status-bar">
   <span>
     <span class="status-dot" id="statusDot"></span>
@@ -614,8 +802,11 @@ body{
 
 <script>
 /* ============================================================
-   MOEX CYBERDECK v4.1
-   + MA20, MA50, MA200 + MAD20 + Lignes de prix
+   MOEX CYBERDECK v7.0
+   + Comparaison multi-titres (base 100)
+   + Volume Profile
+   + Bollinger, RSI, MACD
+   + Alertes prix, export CSV, thème clair/sombre
    ============================================================ */
 
 const TICKERS = [
@@ -654,6 +845,9 @@ const TIMEFRAME_MAP = {
   'ALL': { interval: 24, days: 1095}
 };
 
+/* Couleurs pour la comparaison */
+const COMPARE_COLORS = ['#ff00ff', '#00ff9d', '#ff8c00', '#a020f0', '#ffd700'];
+
 const state = {
   currentTicker: 'SBER',
   chart: null,
@@ -662,18 +856,31 @@ const state = {
   ma20Series: null,
   ma50Series: null,
   ma200Series: null,
+  bbUpperSeries: null,
+  bbLowerSeries: null,
   madSeries: null,
+  rsiSeries: null,
+  macdSeries: null,
+  macdSignalSeries: null,
+  macdHistSeries: null,
   priceLines: [],
+  compareSeries: {},
+  compareData: {},
+  compareMode: false,
+  volProfileOn: false,
   currentTimeframe: '1M',
   isLoading: false,
   searchFilter: '',
   indicators: {
-    ma20:  true,
-    ma50:  true,
-    ma200: true,
-    mad:   false
+    ma20:  true, ma50:  true, ma200: true,
+    bb:    false, mad:  false,
+    rsi:   false, macd: false,
+    volprofile: false
   },
-  lastCandles: []
+  lastCandles: [],
+  alerts: JSON.parse(localStorage.getItem('moex_alerts') || '[]'),
+  lastPrice: null,
+  soundEnabled: true
 };
 
 /* ---------- UTILS ---------- */
@@ -707,7 +914,114 @@ function getTickerInfo(symbol){
   };
 }
 
-/* ---------- FETCH AVEC RETRY + ABORT ---------- */
+/* ---------- TOAST ---------- */
+function showToast(message, type='info', duration=4000){
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success' ? 'check-circle' :
+               type === 'warning' ? 'exclamation-triangle' :
+               type === 'danger'  ? 'bell' : 'info-circle';
+  toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.transition = 'all 0.3s';
+    setTimeout(()=> toast.remove(), 300);
+  }, duration);
+}
+
+/* ---------- SOUND / NOTIFICATIONS ---------- */
+function playAlertSound(){
+  if(!state.soundEnabled) return;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.start(); osc.stop(ctx.currentTime + 0.5);
+    setTimeout(()=>{
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.frequency.value = 1200; osc2.type = 'sine';
+      gain2.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc2.start(); osc2.stop(ctx.currentTime + 0.5);
+    }, 200);
+  }catch(e){}
+}
+
+function requestNotificationPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+function sendNotification(title, body){
+  if('Notification' in window && Notification.permission === 'granted'){
+    new Notification(title, { body });
+  }
+}
+
+/* ---------- ALERTES ---------- */
+function saveAlerts(){
+  localStorage.setItem('moex_alerts', JSON.stringify(state.alerts));
+  renderAlerts();
+}
+function addAlert(){
+  const priceInput = document.getElementById('alertPrice');
+  const condition = document.getElementById('alertCondition').value;
+  const price = parseFloat(priceInput.value);
+  if(isNaN(price) || price <= 0){ showToast('Prix invalide', 'warning'); return; }
+  state.alerts.push({
+    id: Date.now(), ticker: state.currentTicker,
+    price, condition, triggered: false
+  });
+  priceInput.value = '';
+  saveAlerts();
+  showToast(`Alerte ajoutée: ${state.currentTicker} ${condition} ${fmtNum(price)} ₽`, 'success');
+}
+function removeAlert(id){
+  state.alerts = state.alerts.filter(a => a.id !== id);
+  saveAlerts();
+}
+function renderAlerts(){
+  const list = document.getElementById('alertList');
+  document.getElementById('alertCount').textContent = state.alerts.length;
+  if(state.alerts.length === 0){
+    list.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-size:10px;padding:8px">Aucune alerte active</div>';
+    return;
+  }
+  list.innerHTML = state.alerts.map(a => `
+    <div class="alert-item ${a.triggered?'triggered':''}">
+      <span>${a.ticker} ${a.condition} ${fmtNum(a.price)} ₽</span>
+      <button onclick="removeAlert(${a.id})">✕</button>
+    </div>
+  `).join('');
+}
+function checkAlerts(price){
+  if(!price || !state.lastCandles.length) return;
+  let any = false;
+  state.alerts.forEach(a => {
+    if(a.triggered) return;
+    if(a.ticker !== state.currentTicker) return;
+    const triggered = (a.condition === '>' && price >= a.price) ||
+                      (a.condition === '<' && price <= a.price);
+    if(triggered){
+      a.triggered = true; any = true;
+      showToast(`🔔 ${a.ticker} ${a.condition} ${fmtNum(a.price)} ₽ — Prix: ${fmtNum(price)} ₽`, 'danger', 8000);
+      sendNotification(`Alerte ${a.ticker}`, `${a.condition} ${fmtNum(a.price)} ₽ atteint (${fmtNum(price)} ₽)`);
+      playAlertSound();
+    }
+  });
+  if(any) saveAlerts();
+}
+
+/* ---------- FETCH ---------- */
 async function fetchWithRetry(url, retries = 3, delayMs = 500, signal){
   for(let i = 0; i < retries; i++){
     if(signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -727,7 +1041,6 @@ async function fetchWithRetry(url, retries = 3, delayMs = 500, signal){
   }
 }
 
-/* ---------- API MOEX ISS ---------- */
 async function fetchCandles(ticker, interval, from, till, signal){
   const url = `${MOEX_BASE}/engines/stock/markets/shares/boards/TQBR/securities/${ticker}/candles.json?from=${from}&till=${till}&interval=${interval}`;
   const res = await fetchWithRetry(url, 3, 500, signal);
@@ -821,11 +1134,7 @@ async function fetchIMOEX(){
   }
 }
 
-/* ============================================================
-   CALCULS INDICATEURS
-   ============================================================ */
-
-// Moyenne Mobile Simple
+/* ---------- INDICATEURS ---------- */
 function calculateMA(candles, period){
   const result = [];
   if(candles.length < period) return result;
@@ -842,7 +1151,6 @@ function calculateMA(candles, period){
   return result;
 }
 
-// Mean Absolute Deviation (volatilité)
 function calculateMAD(candles, period = 20){
   const result = [];
   if(candles.length < period) return result;
@@ -858,22 +1166,182 @@ function calculateMAD(candles, period = 20){
   return result;
 }
 
+function calculateBollinger(candles, period = 20, mult = 2){
+  const upper = [], lower = [];
+  if(candles.length < period) return { upper, lower };
+  for(let i = period - 1; i < candles.length; i++){
+    const closes = candles.slice(i-period+1, i+1).map(c => c.close);
+    const mean = closes.reduce((a,b) => a+b, 0) / closes.length;
+    const variance = closes.reduce((s,c) => s + Math.pow(c-mean, 2), 0) / closes.length;
+    const std = Math.sqrt(variance);
+    upper.push({ time: candles[i].time, value: mean + mult*std });
+    lower.push({ time: candles[i].time, value: mean - mult*std });
+  }
+  return { upper, lower };
+}
+
+function calculateRSI(candles, period = 14){
+  const result = [];
+  if(candles.length < period + 1) return result;
+  let gains = 0, losses = 0;
+  for(let i = 1; i <= period; i++){
+    const diff = candles[i].close - candles[i-1].close;
+    if(diff >= 0) gains += diff; else losses += -diff;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+  result.push({ time: candles[period].time, value: 100 - (100/(1+rs)) });
+  for(let i = period + 1; i < candles.length; i++){
+    const diff = candles[i].close - candles[i-1].close;
+    const gain = diff >= 0 ? diff : 0;
+    const loss = diff < 0 ? -diff : 0;
+    avgGain = (avgGain * (period-1) + gain) / period;
+    avgLoss = (avgLoss * (period-1) + loss) / period;
+    rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+    result.push({ time: candles[i].time, value: 100 - (100/(1+rs)) });
+  }
+  return result;
+}
+
+function calculateEMA(values, period){
+  const k = 2 / (period + 1);
+  const ema = [];
+  if(values.length === 0) return ema;
+  let prev = values[0].value;
+  ema.push({ time: values[0].time, value: prev });
+  for(let i = 1; i < values.length; i++){
+    prev = values[i].value * k + prev * (1-k);
+    ema.push({ time: values[i].time, value: prev });
+  }
+  return ema;
+}
+
+function calculateMACD(candles, fast=12, slow=26, signal=9){
+  if(candles.length < slow + signal) return { macd: [], signal: [], hist: [] };
+  const closes = candles.map(c => ({ time: c.time, value: c.close }));
+  const emaFast = calculateEMA(closes, fast);
+  const emaSlow = calculateEMA(closes, slow);
+  const macdLine = [];
+  for(let i = 0; i < closes.length; i++){
+    if(i < slow - 1) continue;
+    macdLine.push({ time: closes[i].time, value: emaFast[i].value - emaSlow[i].value });
+  }
+  const signalLine = calculateEMA(macdLine, signal);
+  const hist = [];
+  for(let i = 0; i < signalLine.length; i++){
+    hist.push({
+      time: signalLine[i].time,
+      value: macdLine[i].value - signalLine[i].value,
+      color: macdLine[i].value - signalLine[i].value >= 0 ? '#00ff9d' : '#ff0055'
+    });
+  }
+  return { macd: macdLine, signal: signalLine, hist };
+}
+
+/* ---------- NORMALISATION COMPARAISON ---------- */
+function normalizeCandles(candles){
+  if(candles.length === 0) return [];
+  const base = candles[0].close;
+  return candles.map(c => ({
+    time: c.time,
+    value: (c.close / base) * 100
+  }));
+}
+
+/* ---------- VOLUME PROFILE ---------- */
+function calculateVolumeProfile(candles, bins = 24){
+  if(candles.length === 0) return { bins: [], poc: null, maxVol: 0 };
+  const lows = candles.map(c => c.low);
+  const highs = candles.map(c => c.high);
+  const minPrice = Math.min(...lows);
+  const maxPrice = Math.max(...highs);
+  const range = maxPrice - minPrice || 1;
+  const binSize = range / bins;
+
+  const volumeBins = Array.from({ length: bins }, () => 0);
+
+  candles.forEach(c => {
+    const candleLow = Math.min(c.low, c.close);
+    const candleHigh = Math.max(c.high, c.close);
+    const startBin = Math.max(0, Math.floor((candleLow - minPrice) / binSize));
+    const endBin = Math.min(bins - 1, Math.floor((candleHigh - minPrice) / binSize));
+    const span = endBin - startBin + 1;
+    for(let b = startBin; b <= endBin; b++){
+      volumeBins[b] += c.volume / span;
+    }
+  });
+
+  const maxVol = Math.max(...volumeBins);
+  const pocIdx = volumeBins.indexOf(maxVol);
+
+  const result = volumeBins.map((v, i) => ({
+    priceLow: minPrice + i * binSize,
+    priceHigh: minPrice + (i + 1) * binSize,
+    priceMid: minPrice + (i + 0.5) * binSize,
+    volume: v,
+    isPOC: i === pocIdx
+  }));
+
+  return { bins: result, poc: result[pocIdx], maxVol, minPrice, maxPrice };
+}
+
+function renderVolumeProfile(){
+  const container = document.getElementById('volProfile');
+  const rows = document.getElementById('volProfileRows');
+  if(!state.volProfileOn || state.lastCandles.length === 0){
+    container.classList.remove('active');
+    return;
+  }
+  container.classList.add('active');
+
+  const vp = calculateVolumeProfile(state.lastCandles, 24);
+  if(!vp.bins.length){ container.classList.remove('active'); return; }
+
+  rows.innerHTML = '';
+  vp.bins.forEach(bin => {
+    const pct = (bin.volume / vp.maxVol) * 100;
+    if(pct < 2) return;
+
+    const priceRange = vp.maxPrice - vp.minPrice;
+    const yPct = 100 - ((bin.priceMid - vp.minPrice) / priceRange) * 100;
+
+    const row = document.createElement('div');
+    row.className = `vol-profile-row ${bin.isPOC ? 'poc' : ''}`;
+    row.style.width = pct + '%';
+    row.style.bottom = yPct + '%';
+    row.title = `${fmtNum(bin.priceLow)} - ${fmtNum(bin.priceHigh)} ₽ : ${fmtVol(bin.volume)}`;
+    rows.appendChild(row);
+
+    if(bin.isPOC){
+      const label = document.createElement('div');
+      label.className = 'vol-profile-label';
+      label.style.bottom = yPct + '%';
+      label.textContent = `POC ${fmtNum(bin.priceMid)} ₽`;
+      label.style.color = 'var(--neon-gold)';
+      label.style.fontWeight = '700';
+      rows.appendChild(label);
+    }
+  });
+}
+
 /* ---------- CHART ---------- */
 function initChart(){
   const container = document.getElementById('chart');
+  const isLight = document.body.classList.contains('light-mode');
 
   state.chart = LightweightCharts.createChart(container, {
     width:  container.clientWidth,
     height: container.clientHeight,
     layout:{
-      background:{ type:'solid', color:'#050505' },
-      textColor:'#5c7c8a',
+      background:{ type:'solid', color: isLight ? '#ffffff' : '#050505' },
+      textColor: isLight ? '#333' : '#5c7c8a',
       fontFamily:'JetBrains Mono',
       fontSize: 11
     },
     grid:{
-      vertLines:{ color:'rgba(0,243,255,0.04)', style: 1 },
-      horzLines:{ color:'rgba(0,243,255,0.04)', style: 1 }
+      vertLines:{ color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,243,255,0.04)', style: 1 },
+      horzLines:{ color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,243,255,0.04)', style: 1 }
     },
     crosshair:{
       mode: LightweightCharts.CrosshairMode.Normal,
@@ -882,7 +1350,7 @@ function initChart(){
     },
     rightPriceScale:{
       borderColor:'rgba(0,243,255,0.15)',
-      scaleMargins:{ top:0.1, bottom:0.3 },
+      scaleMargins:{ top:0.1, bottom:0.35 },
       entireTextOnly: false
     },
     timeScale:{
@@ -904,7 +1372,7 @@ function initChart(){
     }
   });
 
-  // === BOUGIES ===
+  // Bougies
   state.candleSeries = state.chart.addCandlestickSeries({
     upColor:'#00ff9d', downColor:'#ff0055',
     borderUpColor:'#00ff9d', borderDownColor:'#ff0055',
@@ -915,74 +1383,99 @@ function initChart(){
     priceFormat:{ type:'price', precision:2, minMove:0.01 }
   });
 
-  // === VOLUME (échelle séparée en bas) ===
+  // Volume
   state.volumeSeries = state.chart.addHistogramSeries({
     color:'#00f3ff',
     priceFormat:{ type:'volume' },
     priceScaleId:'volume-scale',
-    scaleMargins:{ top:0.8, bottom:0 },
     priceLineVisible:false, lastValueVisible:false
   });
   state.chart.priceScale('volume-scale').applyOptions({
-    scaleMargins:{ top:0.8, bottom:0 },
+    scaleMargins:{ top:0.85, bottom:0 },
     borderVisible:false
   });
 
-  // === MAD (échelle "mad-scale", juste au-dessus des volumes) ===
+  // MAD
   state.madSeries = state.chart.addLineSeries({
-    color:'#ff8c00',
-    lineWidth: 2,
-    lineStyle: 0,
-    title: 'MAD20',
+    color:'#ff8c00', lineWidth: 2, lineStyle: 0, title: 'MAD20',
     priceScaleId: 'mad-scale',
-    priceLineVisible: false,
-    lastValueVisible: false,
+    priceLineVisible: false, lastValueVisible: false,
     crosshairMarkerVisible: false,
     visible: state.indicators.mad,
     priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
   });
   state.chart.priceScale('mad-scale').applyOptions({
-    scaleMargins: { top: 0.72, bottom: 0.20 },
+    scaleMargins: { top: 0.72, bottom: 0.28 },
     borderVisible: false
   });
 
-  // === MOYENNES MOBILES (échelle de prix principale) ===
+  // RSI
+  state.rsiSeries = state.chart.addLineSeries({
+    color:'#00ffff', lineWidth: 2, title: 'RSI(14)',
+    priceScaleId: 'rsi-scale', priceLineVisible: false, lastValueVisible: false,
+    visible: state.indicators.rsi
+  });
+  state.chart.priceScale('rsi-scale').applyOptions({
+    scaleMargins: { top: 0.55, bottom: 0.45 },
+    borderVisible: false
+  });
+
+  // MACD
+  state.macdSeries = state.chart.addLineSeries({
+    color:'#00f3ff', lineWidth: 2, title: 'MACD',
+    priceScaleId: 'macd-scale', priceLineVisible: false, lastValueVisible: false,
+    visible: state.indicators.macd
+  });
+  state.macdSignalSeries = state.chart.addLineSeries({
+    color:'#ffd700', lineWidth: 2, title: 'Signal',
+    priceScaleId: 'macd-scale', priceLineVisible: false, lastValueVisible: false,
+    visible: state.indicators.macd
+  });
+  state.macdHistSeries = state.chart.addHistogramSeries({
+    priceScaleId: 'macd-scale', priceLineVisible: false, lastValueVisible: false,
+    visible: state.indicators.macd
+  });
+  state.chart.priceScale('macd-scale').applyOptions({
+    scaleMargins: { top: 0.75, bottom: 0.05 },
+    borderVisible: false
+  });
+
+  // Bollinger
+  state.bbUpperSeries = state.chart.addLineSeries({
+    color:'rgba(160,32,240,0.7)', lineWidth: 1, lineStyle: 2, title: 'BB Upper',
+    priceLineVisible: false, lastValueVisible: false, visible: state.indicators.bb
+  });
+  state.bbLowerSeries = state.chart.addLineSeries({
+    color:'rgba(160,32,240,0.7)', lineWidth: 1, lineStyle: 2, title: 'BB Lower',
+    priceLineVisible: false, lastValueVisible: false, visible: state.indicators.bb
+  });
+
+  // Moyennes mobiles
   state.ma20Series = state.chart.addLineSeries({
-    color:'#00f3ff',
-    lineWidth: 2,
-    title: 'MA20',
-    priceLineVisible: false,
-    lastValueVisible: false,
+    color:'#00f3ff', lineWidth: 2, title: 'MA20',
+    priceLineVisible: false, lastValueVisible: false,
     crosshairMarkerVisible: false,
     visible: state.indicators.ma20
   });
 
   state.ma50Series = state.chart.addLineSeries({
-    color:'#ffd700',
-    lineWidth: 2,
-    title: 'MA50',
-    priceLineVisible: false,
-    lastValueVisible: false,
+    color:'#ffd700', lineWidth: 2, title: 'MA50',
+    priceLineVisible: false, lastValueVisible: false,
     crosshairMarkerVisible: false,
     visible: state.indicators.ma50
   });
 
   state.ma200Series = state.chart.addLineSeries({
-    color:'#ff00ff',
-    lineWidth: 2,
-    title: 'MA200',
-    priceLineVisible: false,
-    lastValueVisible: false,
+    color:'#ff00ff', lineWidth: 2, title: 'MA200',
+    priceLineVisible: false, lastValueVisible: false,
     crosshairMarkerVisible: false,
     visible: state.indicators.ma200
   });
 
-  // Reset zoom
   document.getElementById('chartResetBtn').addEventListener('click', ()=>{
     state.chart.timeScale().fitContent();
   });
 
-  // Resize debounced
   let resizeTimer;
   new ResizeObserver(()=>{
     clearTimeout(resizeTimer);
@@ -990,12 +1483,17 @@ function initChart(){
       const { width, height } = container.getBoundingClientRect();
       if(width>0 && height>0){
         state.chart.applyOptions({ width, height });
+        if(state.volProfileOn) renderVolumeProfile();
       }
     }, 100);
   }).observe(container);
+
+  state.chart.timeScale().subscribeVisibleTimeRangeChange(()=>{
+    if(state.volProfileOn) renderVolumeProfile();
+  });
 }
 
-/* ---------- OVERLAY HELPERS ---------- */
+/* ---------- OVERLAY ---------- */
 function showChartOverlay(text = 'CHARGEMENT', progress = 0){
   const overlay = document.getElementById('chartOverlay');
   document.getElementById('chartOverlayText').textContent = text;
@@ -1009,7 +1507,7 @@ function updateChartBadge(timeframe, count){
   document.getElementById('chartBadge').textContent = `${timeframe} · ${count} BOUGIES`;
 }
 
-/* ---------- CACHE LOCAL ---------- */
+/* ---------- CACHE ---------- */
 const candleCache = new Map();
 const CACHE_TTL_MS = 60 * 1000;
 
@@ -1033,7 +1531,6 @@ function setCachedCandles(ticker, timeframe, data){
   }
 }
 
-/* ---------- ABORT CONTROLLER ---------- */
 let currentAbortController = null;
 
 /* ---------- UPDATE CHART ---------- */
@@ -1047,6 +1544,7 @@ async function updateChart(ticker, timeframe){
     applyCandlesToChart(cached);
     updateChartBadge(timeframe, cached.length);
     setStatus(`OK (cache) — ${cached.length} bougies`);
+    if(state.compareMode) await refreshAllCompareSeries();
     return;
   }
 
@@ -1077,6 +1575,7 @@ async function updateChart(ticker, timeframe){
     showChartOverlay('TERMINÉ', 100);
     setTimeout(hideChartOverlay, 200);
     setStatus(`OK — ${candles.length} bougies`);
+    if(state.compareMode) await refreshAllCompareSeries();
   }catch(e){
     if(e.name === 'AbortError'){ console.log('Requête annulée'); return; }
     console.error('updateChart:', e);
@@ -1091,27 +1590,32 @@ async function updateChart(ticker, timeframe){
 function applyCandlesToChart(candles){
   state.lastCandles = candles;
 
-  // Bougies
   state.candleSeries.setData(candles.map(c=>({
     time: c.time, open: c.open, high: c.high, low: c.low, close: c.close
   })));
 
-  // Volumes
   state.volumeSeries.setData(candles.map(c=>({
     time: c.time,
     value: c.volume,
     color: c.close >= c.open ? 'rgba(0,255,157,0.45)' : 'rgba(255,0,85,0.45)'
   })));
 
-  // Moyennes mobiles
   state.ma20Series.setData(calculateMA(candles, 20));
   state.ma50Series.setData(calculateMA(candles, 50));
   state.ma200Series.setData(calculateMA(candles, 200));
-
-  // MAD20
   state.madSeries.setData(calculateMAD(candles, 20));
 
-  // Lignes de prix (Open, High, Low, Prev Close de la dernière bougie)
+  const bb = calculateBollinger(candles, 20, 2);
+  state.bbUpperSeries.setData(bb.upper);
+  state.bbLowerSeries.setData(bb.lower);
+
+  state.rsiSeries.setData(calculateRSI(candles, 14));
+
+  const macd = calculateMACD(candles, 12, 26, 9);
+  state.macdSeries.setData(macd.macd);
+  state.macdSignalSeries.setData(macd.signal);
+  state.macdHistSeries.setData(macd.hist);
+
   state.priceLines.forEach(pl => state.candleSeries.removePriceLine(pl));
   state.priceLines = [];
 
@@ -1119,53 +1623,147 @@ function applyCandlesToChart(candles){
     const last = candles[candles.length - 1];
     const prev = candles.length > 1 ? candles[candles.length - 2] : last;
 
-    // Open
     state.priceLines.push(state.candleSeries.createPriceLine({
-      price: last.open,
-      color: 'rgba(0,243,255,0.5)',
-      lineWidth: 1,
-      lineStyle: 2,
-      axisLabelVisible: true,
-      title: 'OPEN'
+      price: last.open, color: 'rgba(0,243,255,0.5)', lineWidth: 1,
+      lineStyle: 2, axisLabelVisible: true, title: 'OPEN'
+    }));
+    state.priceLines.push(state.candleSeries.createPriceLine({
+      price: last.high, color: 'rgba(0,255,157,0.5)', lineWidth: 1,
+      lineStyle: 2, axisLabelVisible: true, title: 'HIGH'
+    }));
+    state.priceLines.push(state.candleSeries.createPriceLine({
+      price: last.low, color: 'rgba(255,0,85,0.5)', lineWidth: 1,
+      lineStyle: 2, axisLabelVisible: true, title: 'LOW'
     }));
 
-    // High
-    state.priceLines.push(state.candleSeries.createPriceLine({
-      price: last.high,
-      color: 'rgba(0,255,157,0.5)',
-      lineWidth: 1,
-      lineStyle: 2,
-      axisLabelVisible: true,
-      title: 'HIGH'
-    }));
-
-    // Low
-    state.priceLines.push(state.candleSeries.createPriceLine({
-      price: last.low,
-      color: 'rgba(255,0,85,0.5)',
-      lineWidth: 1,
-      lineStyle: 2,
-      axisLabelVisible: true,
-      title: 'LOW'
-    }));
-
-    // Prev close (si différent)
     if(candles.length > 1){
       state.priceLines.push(state.candleSeries.createPriceLine({
-        price: prev.close,
-        color: 'rgba(255,215,0,0.4)',
-        lineWidth: 1,
-        lineStyle: 3,
-        axisLabelVisible: true,
-        title: 'PREV'
+        price: prev.close, color: 'rgba(255,215,0,0.4)', lineWidth: 1,
+        lineStyle: 3, axisLabelVisible: true, title: 'PREV'
       }));
     }
   }
 
   state.chart.timeScale().fitContent();
+  if(state.volProfileOn) setTimeout(renderVolumeProfile, 100);
 }
 
-/* ---------- TOGGLE INDICATEURS ---------- */
+/* ---------- COMPARAISON ---------- */
+function setupCompareMode(){
+  const btn = document.getElementById('compareModeBtn');
+  btn.addEventListener('click', ()=>{
+    state.compareMode = !state.compareMode;
+    btn.classList.toggle('active', state.compareMode);
+    document.getElementById('compareBar').classList.toggle('hidden', !state.compareMode);
+
+    if(!state.compareMode){
+      Object.keys(state.compareSeries).forEach(t => {
+        state.chart.removeSeries(state.compareSeries[t]);
+      });
+      state.compareSeries = {};
+      state.compareData = {};
+      renderCompareChips();
+      renderFilteredWatchlist();
+      showToast('Mode comparaison désactivé', 'info');
+    } else {
+      showToast('Mode comparaison activé — clique sur les cases à gauche (max 3)', 'success');
+      renderFilteredWatchlist();
+    }
+  });
+}
+
+async function toggleCompareTicker(ticker){
+  if(!state.compareMode){
+    showToast('Active d\'abord le mode comparaison (bouton en haut à droite)', 'warning');
+    return;
+  }
+  if(state.compareSeries[ticker]){
+    state.chart.removeSeries(state.compareSeries[ticker]);
+    delete state.compareSeries[ticker];
+    delete state.compareData[ticker];
+    renderCompareChips();
+    renderFilteredWatchlist();
+    return;
+  }
+  if(Object.keys(state.compareSeries).length >= 3){
+    showToast('Maximum 3 titres en comparaison', 'warning');
+    return;
+  }
+  try{
+    const cfg = TIMEFRAME_MAP[state.currentTimeframe] || TIMEFRAME_MAP['1M'];
+    const till = new Date();
+    const from = new Date(Date.now() - cfg.days*86400000);
+    const candles = await fetchCandles(ticker, cfg.interval, fmtDate(from), fmtDate(till));
+    if(candles.length === 0){ showToast('Pas de données pour ' + ticker, 'warning'); return; }
+
+    const colorIdx = Object.keys(state.compareSeries).length;
+    const color = COMPARE_COLORS[colorIdx % COMPARE_COLORS.length];
+
+    const series = state.chart.addLineSeries({
+      color: color,
+      lineWidth: 2,
+      lineStyle: 0,
+      title: ticker,
+      priceScaleId: 'compare-scale',
+      priceLineVisible: false,
+      lastValueVisible: true,
+      crosshairMarkerVisible: true
+    });
+    state.chart.priceScale('compare-scale').applyOptions({
+      scaleMargins: { top: 0.1, bottom: 0.35 },
+      borderVisible: false
+    });
+
+    const normalized = normalizeCandles(candles);
+    series.setData(normalized);
+
+    state.compareSeries[ticker] = series;
+    state.compareData[ticker] = candles;
+
+    renderCompareChips();
+    renderFilteredWatchlist();
+    showToast(`${ticker} ajouté à la comparaison (base 100)`, 'success');
+  }catch(e){
+    console.error('Compare error:', e);
+    showToast('Erreur comparaison ' + ticker, 'danger');
+  }
+}
+
+async function refreshAllCompareSeries(){
+  const tickers = Object.keys(state.compareSeries);
+  for(const ticker of tickers){
+    try{
+      const cfg = TIMEFRAME_MAP[state.currentTimeframe] || TIMEFRAME_MAP['1M'];
+      const till = new Date();
+      const from = new Date(Date.now() - cfg.days*86400000);
+      const candles = await fetchCandles(ticker, cfg.interval, fmtDate(from), fmtDate(till));
+      if(candles.length === 0) continue;
+      const normalized = normalizeCandles(candles);
+      state.compareSeries[ticker].setData(normalized);
+      state.compareData[ticker] = candles;
+    }catch(e){ console.warn('Refresh compare error', ticker, e); }
+  }
+}
+
+function renderCompareChips(){
+  const container = document.getElementById('compareChips');
+  const tickers = Object.keys(state.compareSeries);
+  if(tickers.length === 0){
+    container.innerHTML = '<span style="color:var(--text-dim);font-size:10px">Aucun titre sélectionné — clique sur les cases à gauche</span>';
+    return;
+  }
+  container.innerHTML = tickers.map(t => {
+    const color = state.compareSeries[t].options().color;
+    return `
+      <span class="compare-chip">
+        <span class="dot" style="background:${color};color:${color}"></span>
+        ${t}
+        <button onclick="toggleCompareTicker('${t}')">✕</button>
+      </span>`;
+  }).join('');
+}
+
+/* ---------- INDICATEURS TOGGLES ---------- */
 function setupIndicatorToggles(){
   document.querySelectorAll('.indicator-toggle').forEach(el => {
     el.addEventListener('click', () => {
@@ -1173,10 +1771,24 @@ function setupIndicatorToggles(){
       state.indicators[ind] = !state.indicators[ind];
       el.classList.toggle('active', state.indicators[ind]);
 
-      if(ind === 'ma20')  state.ma20Series.applyOptions({ visible: state.indicators.ma20 });
-      if(ind === 'ma50')  state.ma50Series.applyOptions({ visible: state.indicators.ma50 });
-      if(ind === 'ma200') state.ma200Series.applyOptions({ visible: state.indicators.ma200 });
-      if(ind === 'mad')   state.madSeries.applyOptions({ visible: state.indicators.mad });
+      const map = {
+        ma20: state.ma20Series, ma50: state.ma50Series, ma200: state.ma200Series,
+        mad: state.madSeries, rsi: state.rsiSeries, macd: state.macdSeries,
+        bb: state.bbUpperSeries
+      };
+      if(map[ind]) map[ind].applyOptions({ visible: state.indicators[ind] });
+
+      if(ind === 'macd'){
+        state.macdSignalSeries.applyOptions({ visible: state.indicators.macd });
+        state.macdHistSeries.applyOptions({ visible: state.indicators.macd });
+      }
+      if(ind === 'bb'){
+        state.bbLowerSeries.applyOptions({ visible: state.indicators.bb });
+      }
+      if(ind === 'volprofile'){
+        state.volProfileOn = state.indicators.volprofile;
+        renderVolumeProfile();
+      }
     });
   });
 }
@@ -1224,11 +1836,22 @@ function renderFilteredWatchlist(){
     return;
   }
 
+  const compareCount = Object.keys(state.compareSeries).length;
   let html = '';
+
   filtered.forEach(item => {
     const t = item.ticker;
     const q = item.quote;
-    const activeClass = t.symbol === state.currentTicker ? 'active' : '';
+    const isCurrent = t.symbol === state.currentTicker;
+    const isCompared = !!state.compareSeries[t.symbol];
+    const activeClass = isCurrent ? 'active' : '';
+    const comparedClass = isCompared ? 'compared' : '';
+
+    const compareDisabled = !state.compareMode || (compareCount >= 3 && !isCompared);
+    const checkbox = state.compareMode
+      ? `<span class="compare-check ${isCompared?'checked':''} ${compareDisabled&&!isCompared?'disabled':''}"
+              onclick="event.stopPropagation();toggleCompareTicker('${t.symbol}')">✓</span>`
+      : '';
 
     if(q){
       const change = q.changePct ?? 0;
@@ -1237,9 +1860,9 @@ function renderFilteredWatchlist(){
       const alertClass = Math.abs(change) > 3 ? 'alert' : '';
 
       html += `
-        <div class="watchlist-item ${activeClass} ${alertClass}" onclick="selectTicker('${t.symbol}')">
+        <div class="watchlist-item ${activeClass} ${comparedClass} ${alertClass}" onclick="selectTicker('${t.symbol}')">
           <div style="flex:1;min-width:0">
-            <div class="watchlist-symbol">${t.symbol}
+            <div class="watchlist-symbol">${checkbox}${t.symbol}
               <span class="sector-badge sector-${t.sector}">${SECTOR_LABELS[t.sector] || t.sector}</span>
             </div>
             <div class="watchlist-name">${t.name}</div>
@@ -1251,9 +1874,9 @@ function renderFilteredWatchlist(){
         </div>`;
     } else {
       html += `
-        <div class="watchlist-item ${activeClass}" onclick="selectTicker('${t.symbol}')">
+        <div class="watchlist-item ${activeClass} ${comparedClass}" onclick="selectTicker('${t.symbol}')">
           <div style="flex:1">
-            <div class="watchlist-symbol">${t.symbol}</div>
+            <div class="watchlist-symbol">${checkbox}${t.symbol}</div>
             <div class="watchlist-name">${t.name}</div>
           </div>
           <div style="text-align:right">
@@ -1270,6 +1893,7 @@ function renderFilteredWatchlist(){
 function updateStats(q){
   const price = q.last || q.prevClose;
   const change = q.changePct || 0;
+  state.lastPrice = price;
 
   const elP = document.getElementById('currentPrice');
   elP.textContent = fmtNum(price) + ' ₽';
@@ -1294,6 +1918,8 @@ function updateStats(q){
   document.getElementById('statHigh').textContent   = fmtNum(q.high);
   document.getElementById('statLow').textContent    = fmtNum(q.low);
   document.getElementById('statVolume').textContent = fmtVol(q.volume);
+
+  checkAlerts(price);
 }
 
 /* ---------- ORDERBOOK ---------- */
@@ -1398,16 +2024,51 @@ async function renderOrderbook(ticker){
 function renderNews(){
   const news = [
     { date:'LIVE',    title:'Flux MOEX ISS connecté — différé 15 min' },
-    { date:'INDIC',   title:'MA20 (cyan) · MA50 (or) · MA200 (magenta) · MAD20 (orange)' },
-    { date:'ASTUCE',  title:'Clique sur les indicateurs pour les activer/désactiver' },
-    { date:'SESSION', title:'Ouverture MOEX : 10:00 → 18:40 MSK (Lun-Ven)' },
-    { date:'INFO',    title:'Données fournies par iss.moex.com' }
+    { date:'NOUVEAU', title:'Comparaison multi-titres : active le mode puis clique sur les cases' },
+    { date:'NOUVEAU', title:'Volume Profile : clique sur VOL PROFILE dans la barre d\'indicateurs' },
+    { date:'NOUVEAU', title:'Alertes prix · Export CSV · Thème clair/sombre' },
+    { date:'ASTUCE',  title:'POC = Point of Control (prix avec le plus de volume)' },
+    { date:'SESSION', title:'Ouverture MOEX : 10:00 → 18:40 MSK (Lun-Ven)' }
   ];
   document.getElementById('news').innerHTML = news.map(n=>`
     <div class="news-item">
       <div class="news-date"><i class="far fa-clock"></i>${n.date}</div>
       <div class="news-title">${n.title}</div>
     </div>`).join('');
+}
+
+/* ---------- EXPORT CSV ---------- */
+function exportCSV(){
+  if(state.lastCandles.length === 0){ showToast('Aucune donnée à exporter', 'warning'); return; }
+  const header = 'Date;Open;High;Low;Close;Volume\n';
+  const rows = state.lastCandles.map(c =>
+    `${c.time};${c.open};${c.high};${c.low};${c.close};${c.volume}`
+  ).join('\n');
+  const blob = new Blob([header + rows], { type:'text/csv;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${state.currentTicker}_${state.currentTimeframe}_${fmtDate(new Date())}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast('Export CSV téléchargé', 'success');
+}
+
+/* ---------- THEME ---------- */
+function toggleTheme(){
+  document.body.classList.toggle('light-mode');
+  const isLight = document.body.classList.contains('light-mode');
+  localStorage.setItem('moex_theme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggleBtn').innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  state.chart.applyOptions({
+    layout:{
+      background:{ type:'solid', color: isLight ? '#ffffff' : '#050505' },
+      textColor: isLight ? '#333' : '#5c7c8a'
+    },
+    grid:{
+      vertLines:{ color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,243,255,0.04)' },
+      horzLines:{ color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(0,243,255,0.04)' }
+    }
+  });
 }
 
 /* ---------- SELECT TICKER ---------- */
@@ -1432,6 +2093,7 @@ async function selectTicker(ticker){
   ]);
 
   renderFilteredWatchlist();
+  renderAlerts();
 }
 
 /* ---------- TIMEFRAMES ---------- */
@@ -1471,7 +2133,7 @@ async function updateIMOEX(){
   }
 }
 
-/* ---------- MOSCOW CLOCK ---------- */
+/* ---------- CLOCK ---------- */
 function updateMoscowClock(){
   const now = new Date();
   const moscow = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
@@ -1488,8 +2150,9 @@ function startRefreshLoop(){
       const q = await fetchQuote(state.currentTicker);
       updateStats(q);
       await renderOrderbook(state.currentTicker);
+      if(state.compareMode) await refreshAllCompareSeries();
     }catch(e){ console.warn('refresh err', e); }
-  }, 45000);
+  }, 15000);
 
   setInterval(renderWatchlist, 90000);
   setInterval(updateIMOEX, 60000);
@@ -1498,13 +2161,35 @@ function startRefreshLoop(){
 
 /* ---------- INIT ---------- */
 async function init(){
+  if(localStorage.getItem('moex_theme') === 'light'){
+    document.body.classList.add('light-mode');
+    document.getElementById('themeToggleBtn').innerHTML = '<i class="fas fa-sun"></i>';
+  }
+
   initChart();
   renderNews();
   setupTimeframes();
   setupSearch();
   setupIndicatorToggles();
+  setupCompareMode();
+  renderAlerts();
+  renderCompareChips();
   updateMoscowClock();
   updateIMOEX();
+  requestNotificationPermission();
+
+  document.getElementById('addAlertBtn').addEventListener('click', addAlert);
+  document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+  document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+
+  document.getElementById('volProfileBtn').addEventListener('click', ()=>{
+    state.indicators.volprofile = !state.indicators.volprofile;
+    state.volProfileOn = state.indicators.volprofile;
+    document.getElementById('volProfileBtn').classList.toggle('active', state.volProfileOn);
+    document.querySelector('[data-indicator="volprofile"]').classList.toggle('active', state.volProfileOn);
+    renderVolumeProfile();
+    showToast(state.volProfileOn ? 'Volume Profile activé' : 'Volume Profile désactivé', 'info');
+  });
 
   try{
     const q = await fetchQuote(state.currentTicker);
@@ -1521,6 +2206,8 @@ async function init(){
 }
 
 window.selectTicker = selectTicker;
+window.removeAlert = removeAlert;
+window.toggleCompareTicker = toggleCompareTicker;
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
