@@ -135,9 +135,7 @@ body{
   border-left-color:var(--neon-gold);
   box-shadow:0 0 15px rgba(255,215,0,0.15);
 }
-.watchlist-item.alert{
-  animation:alertPulse 1.5s infinite;
-}
+.watchlist-item.alert{animation:alertPulse 1.5s infinite}
 @keyframes alertPulse{
   0%,100%{background:rgba(255,0,85,0.05)}
   50%{background:rgba(255,0,85,0.2)}
@@ -163,6 +161,7 @@ body{
 .sector-tech{background:rgba(255,0,255,0.2);color:#ff00ff;border:1px solid rgba(255,0,255,0.4)}
 .sector-metal{background:rgba(192,192,192,0.2);color:#c0c0c0;border:1px solid rgba(192,192,192,0.4)}
 .sector-telecom{background:rgba(0,255,157,0.2);color:#00ff9d;border:1px solid rgba(0,255,157,0.4)}
+.sector-consumer{background:rgba(255,140,0,0.2);color:#ff8c00;border:1px solid rgba(255,140,0,0.4)}
 
 /* Chart area */
 .chart-area{
@@ -235,6 +234,76 @@ body{
   width:100%;height:100%;min-height:300px;
   border-radius:8px;overflow:hidden;
   box-shadow:inset 0 0 50px rgba(0,0,0,0.8);
+}
+
+/* ====== GRAPH OVERLAY / BADGE / RESET ====== */
+.chart-overlay{
+  position:absolute;
+  inset:10px;
+  background:rgba(5,5,5,0.85);
+  backdrop-filter:blur(4px);
+  border-radius:8px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+  pointer-events:none;
+}
+.chart-overlay.active{display:flex}
+.chart-overlay-content{
+  text-align:center;
+  color:var(--neon-cyan);
+  font-family:var(--font-display);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:11px;
+}
+.chart-overlay-content i{font-size:28px;margin-bottom:12px;display:block}
+.chart-overlay-bar{
+  width:200px;height:3px;background:rgba(0,243,255,0.15);
+  border-radius:2px;overflow:hidden;margin:10px auto 0;
+}
+.chart-overlay-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--neon-cyan),var(--neon-gold));
+  width:0%;
+  transition:width 0.3s ease;
+  box-shadow:0 0 10px var(--neon-cyan);
+}
+.chart-badge{
+  position:absolute;
+  top:18px;left:18px;
+  padding:4px 10px;
+  background:rgba(0,0,0,0.7);
+  border:1px solid rgba(0,243,255,0.3);
+  border-radius:3px;
+  font-family:var(--font-data);
+  font-size:10px;
+  color:var(--neon-gold);
+  letter-spacing:1px;
+  z-index:5;
+  pointer-events:none;
+}
+.chart-reset-btn{
+  position:absolute;
+  top:18px;right:18px;
+  padding:5px 10px;
+  background:rgba(0,0,0,0.7);
+  border:1px solid rgba(0,243,255,0.3);
+  border-radius:3px;
+  font-family:var(--font-display);
+  font-size:10px;
+  color:var(--neon-cyan);
+  letter-spacing:1px;
+  cursor:pointer;
+  transition:all 0.2s;
+  z-index:5;
+  text-transform:uppercase;
+}
+.chart-reset-btn:hover{
+  border-color:var(--neon-gold);
+  color:var(--neon-gold);
+  box-shadow:0 0 10px rgba(255,215,0,0.3);
 }
 
 /* Timeframe */
@@ -348,7 +417,6 @@ body{
   letter-spacing:1px;
 }
 
-/* Responsive */
 @media (max-width:1200px){
   .app{grid-template-columns:280px 1fr 300px}
   .status-bar{left:280px;right:300px}
@@ -373,7 +441,6 @@ body{
       <span class="blink" style="color:var(--neon-green);font-size:10px">● LIVE</span>
     </div>
 
-    <!-- IMOEX banner -->
     <div class="imoex-banner" id="imoexBanner">
       <div>
         <div class="imoex-label">Indice IMOEX</div>
@@ -384,7 +451,6 @@ body{
       </div>
     </div>
 
-    <!-- Search -->
     <div class="search-bar">
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un titre...">
     </div>
@@ -435,6 +501,19 @@ body{
 
     <div class="chart-container">
       <div id="chart"></div>
+      <div class="chart-overlay" id="chartOverlay">
+        <div class="chart-overlay-content">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <span id="chartOverlayText">CHARGEMENT</span>
+          <div class="chart-overlay-bar">
+            <div class="chart-overlay-bar-fill" id="chartOverlayBar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-badge" id="chartBadge">1M · 30 BOUGIES</div>
+      <button class="chart-reset-btn" id="chartResetBtn">
+        <i class="fas fa-crosshairs"></i> RESET ZOOM
+      </button>
       <div class="volume-legend">
         <span class="volume-up">Volume</span>
       </div>
@@ -494,21 +573,21 @@ body{
 
 /* ---------- CONFIG ---------- */
 const TICKERS = [
-  { symbol:'SBER', name:'Sberbank',        sector:'finance' },
-  { symbol:'GAZP', name:'Gazprom',         sector:'energy'  },
-  { symbol:'LKOH', name:'Lukoil',          sector:'energy'  },
-  { symbol:'GMKN', name:'Norilsk Nickel',  sector:'metal'   },
-  { symbol:'NVTK', name:'Novatek',         sector:'energy'  },
-  { symbol:'ROSN', name:'Rosneft',         sector:'energy'  },
-  { symbol:'YNDX', name:'Yandex',          sector:'tech'    },
-  { symbol:'TATN', name:'Tatneft',         sector:'energy'  },
-  { symbol:'MTSS', name:'MTS',             sector:'telecom' },
-  { symbol:'PLZL', name:'Polyus',          sector:'metal'   },
-  { symbol:'SNGS', name:'Surgutneftegas',  sector:'energy'  },
-  { symbol:'MGNT', name:'Magnit',          sector:'consumer'},
-  { symbol:'VTBR', name:'VTB Bank',        sector:'finance' },
-  { symbol:'ALRS', name:'Alrosa',          sector:'metal'   },
-  { symbol:'CHMF', name:'Severstal',       sector:'metal'   }
+  { symbol:'SBER', name:'Sberbank',        sector:'finance'  },
+  { symbol:'GAZP', name:'Gazprom',         sector:'energy'   },
+  { symbol:'LKOH', name:'Lukoil',          sector:'energy'   },
+  { symbol:'GMKN', name:'Norilsk Nickel',  sector:'metal'    },
+  { symbol:'NVTK', name:'Novatek',         sector:'energy'   },
+  { symbol:'ROSN', name:'Rosneft',         sector:'energy'   },
+  { symbol:'YNDX', name:'Yandex',          sector:'tech'     },
+  { symbol:'TATN', name:'Tatneft',         sector:'energy'   },
+  { symbol:'MTSS', name:'MTS',             sector:'telecom'  },
+  { symbol:'PLZL', name:'Polyus',          sector:'metal'    },
+  { symbol:'SNGS', name:'Surgutneftegas',  sector:'energy'   },
+  { symbol:'MGNT', name:'Magnit',          sector:'consumer' },
+  { symbol:'VTBR', name:'VTB Bank',        sector:'finance'  },
+  { symbol:'ALRS', name:'Alrosa',          sector:'metal'    },
+  { symbol:'CHMF', name:'Severstal',       sector:'metal'    }
 ];
 
 const SECTOR_LABELS = {
@@ -575,11 +654,12 @@ function getTickerInfo(symbol){
   };
 }
 
-/* ---------- FETCH AVEC RETRY ---------- */
-async function fetchWithRetry(url, retries = 3, delayMs = 500){
+/* ---------- FETCH AVEC RETRY + ABORT ---------- */
+async function fetchWithRetry(url, retries = 3, delayMs = 500, signal){
   for(let i = 0; i < retries; i++){
+    if(signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     try{
-      const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+      const res = await fetch(CORS_PROXY + encodeURIComponent(url), { signal });
       if(res.ok) return res;
       if(res.status === 403 && i < retries - 1){
         await new Promise(r => setTimeout(r, delayMs * (i + 1)));
@@ -587,6 +667,7 @@ async function fetchWithRetry(url, retries = 3, delayMs = 500){
       }
       throw new Error('HTTP ' + res.status);
     }catch(e){
+      if(e.name === 'AbortError') throw e;
       if(i === retries - 1) throw e;
       await new Promise(r => setTimeout(r, delayMs * (i + 1)));
     }
@@ -594,9 +675,9 @@ async function fetchWithRetry(url, retries = 3, delayMs = 500){
 }
 
 /* ---------- API MOEX ISS ---------- */
-async function fetchCandles(ticker, interval, from, till){
+async function fetchCandles(ticker, interval, from, till, signal){
   const url = `${MOEX_BASE}/engines/stock/markets/shares/boards/TQBR/securities/${ticker}/candles.json?from=${from}&till=${till}&interval=${interval}`;
-  const res = await fetchWithRetry(url);
+  const res = await fetchWithRetry(url, 3, 500, signal);
   const json = await res.json();
   if(!json.candles) throw new Error('Réponse invalide');
   const { columns, data } = json.candles;
@@ -699,45 +780,87 @@ function initChart(){
     layout:{
       background:{ type:'solid', color:'#050505' },
       textColor:'#5c7c8a',
-      fontFamily:'JetBrains Mono'
+      fontFamily:'JetBrains Mono',
+      fontSize: 11
     },
     grid:{
-      vertLines:{ color:'rgba(0,243,255,0.05)' },
-      horzLines:{ color:'rgba(0,243,255,0.05)' }
+      vertLines:{ color:'rgba(0,243,255,0.04)', style: 1 },
+      horzLines:{ color:'rgba(0,243,255,0.04)', style: 1 }
     },
     crosshair:{
       mode: LightweightCharts.CrosshairMode.Normal,
-      vertLine:{ color:'#ffd700', width:1, style:2, labelBackgroundColor:'#ffd700' },
-      horzLine:{ color:'#ffd700', width:1, style:2, labelBackgroundColor:'#ffd700' }
+      vertLine:{
+        color:'#ffd700', width:1, style:2,
+        labelBackgroundColor:'#1a1a2e'
+      },
+      horzLine:{
+        color:'#ffd700', width:1, style:2,
+        labelBackgroundColor:'#1a1a2e'
+      }
     },
     rightPriceScale:{
-      borderColor:'rgba(0,243,255,0.1)',
-      scaleMargins:{ top:0.1, bottom:0.25 }
+      borderColor:'rgba(0,243,255,0.15)',
+      scaleMargins:{ top:0.1, bottom:0.25 },
+      entireTextOnly: false
     },
     timeScale:{
-      borderColor:'rgba(0,243,255,0.1)',
+      borderColor:'rgba(0,243,255,0.15)',
       timeVisible:true,
-      secondsVisible:false
+      secondsVisible:false,
+      rightOffset: 5,
+      barSpacing: 6,
+      minBarSpacing: 2,
+      fixLeftEdge: false,
+      fixRightEdge: false,
+      lockVisibleTimeRangeOnResize: true
     },
-    handleScale:{ axisPressedMouseMove:true, mouseWheel:true, pinch:true },
-    handleScroll:{ mouseWheel:true, pressedMouseMove:true }
+    handleScale:{
+      axisPressedMouseMove:true,
+      mouseWheel:true,
+      pinch:true
+    },
+    handleScroll:{
+      mouseWheel:true,
+      pressedMouseMove:true,
+      horzTouchDrag:true,
+      vertTouchDrag:false
+    },
+    kineticScroll:{
+      touch:true,
+      mouse:false
+    },
+    localization:{
+      priceFormatter: p => p.toLocaleString('fr-FR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' ₽'
+    }
   });
 
+  // Bougies néon premium
   state.candleSeries = state.chart.addCandlestickSeries({
-    upColor:'#00ff9d', downColor:'#ff0055',
-    borderUpColor:'#00ff9d', borderDownColor:'#ff0055',
-    wickUpColor:'#00ff9d', wickDownColor:'#ff0055',
-    priceLineVisible:true, lastValueVisible:true,
-    priceLineColor:'#ffd700', priceLineStyle:2,
+    upColor:'#00ff9d',
+    downColor:'#ff0055',
+    borderUpColor:'#00ff9d',
+    borderDownColor:'#ff0055',
+    wickUpColor:'rgba(0,255,157,0.8)',
+    wickDownColor:'rgba(255,0,85,0.8)',
+    priceLineVisible:true,
+    lastValueVisible:true,
+    priceLineColor:'#ffd700',
+    priceLineWidth:2,
+    priceLineStyle:0,
     priceFormat:{ type:'price', precision:2, minMove:0.01 }
   });
 
+  // Volume
   state.volumeSeries = state.chart.addHistogramSeries({
     color:'#00f3ff',
     priceFormat:{ type:'volume' },
     priceScaleId:'volume-scale',
     scaleMargins:{ top:0.8, bottom:0 },
-    priceLineVisible:false, lastValueVisible:false
+    priceLineVisible:false,
+    lastValueVisible:false
   });
 
   state.chart.priceScale('volume-scale').applyOptions({
@@ -745,10 +868,146 @@ function initChart(){
     borderVisible:false
   });
 
+  // Reset zoom
+  document.getElementById('chartResetBtn').addEventListener('click', ()=>{
+    state.chart.timeScale().fitContent();
+  });
+
+  // Resize debounced
+  let resizeTimer;
   new ResizeObserver(()=>{
-    const { width, height } = container.getBoundingClientRect();
-    if(width>0 && height>0) state.chart.applyOptions({ width, height });
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(()=>{
+      const { width, height } = container.getBoundingClientRect();
+      if(width>0 && height>0){
+        state.chart.applyOptions({ width, height });
+      }
+    }, 100);
   }).observe(container);
+}
+
+/* ---------- OVERLAY HELPERS ---------- */
+function showChartOverlay(text = 'CHARGEMENT', progress = 0){
+  const overlay = document.getElementById('chartOverlay');
+  document.getElementById('chartOverlayText').textContent = text;
+  document.getElementById('chartOverlayBar').style.width = progress + '%';
+  overlay.classList.add('active');
+}
+function hideChartOverlay(){
+  document.getElementById('chartOverlay').classList.remove('active');
+}
+function updateChartBadge(timeframe, count){
+  document.getElementById('chartBadge').textContent =
+    `${timeframe} · ${count} BOUGIES`;
+}
+
+/* ---------- CACHE LOCAL ---------- */
+const candleCache = new Map();
+const CACHE_TTL_MS = 60 * 1000;
+
+function getCacheKey(ticker, timeframe){
+  return `${ticker}|${timeframe}`;
+}
+function getCachedCandles(ticker, timeframe){
+  const key = getCacheKey(ticker, timeframe);
+  const cached = candleCache.get(key);
+  if(!cached) return null;
+  if(Date.now() - cached.timestamp > CACHE_TTL_MS){
+    candleCache.delete(key);
+    return null;
+  }
+  return cached.data;
+}
+function setCachedCandles(ticker, timeframe, data){
+  const key = getCacheKey(ticker, timeframe);
+  candleCache.set(key, { data, timestamp: Date.now() });
+  if(candleCache.size > 50){
+    const firstKey = candleCache.keys().next().value;
+    candleCache.delete(firstKey);
+  }
+}
+
+/* ---------- ABORT CONTROLLER ---------- */
+let currentAbortController = null;
+
+/* ---------- UPDATE CHART ---------- */
+async function updateChart(ticker, timeframe){
+  if(currentAbortController){
+    currentAbortController.abort();
+  }
+  currentAbortController = new AbortController();
+  const signal = currentAbortController.signal;
+
+  // Cache
+  const cached = getCachedCandles(ticker, timeframe);
+  if(cached){
+    applyCandlesToChart(cached);
+    updateChartBadge(timeframe, cached.length);
+    setStatus(`OK (cache) — ${cached.length} bougies`);
+    return;
+  }
+
+  showChartOverlay(`CHARGEMENT ${ticker} ${timeframe}`, 10);
+  state.isLoading = true;
+  setStatus(`Chargement ${ticker} ${timeframe}...`);
+
+  try{
+    const cfg  = TIMEFRAME_MAP[timeframe] || TIMEFRAME_MAP['1M'];
+    const till = new Date();
+    const from = new Date(Date.now() - cfg.days*86400000);
+
+    showChartOverlay(`CHARGEMENT ${ticker} ${timeframe}`, 40);
+
+    const candles = await fetchCandles(
+      ticker, cfg.interval, fmtDate(from), fmtDate(till), signal
+    );
+
+    if(signal.aborted) return;
+
+    showChartOverlay(`RENDU ${candles.length} BOUGIES`, 80);
+
+    if(candles.length === 0) throw new Error('Aucune bougie');
+
+    applyCandlesToChart(candles);
+    updateChartBadge(timeframe, candles.length);
+    setCachedCandles(ticker, timeframe, candles);
+
+    showChartOverlay('TERMINÉ', 100);
+    setTimeout(hideChartOverlay, 200);
+
+    setStatus(`OK — ${candles.length} bougies`);
+  }catch(e){
+    if(e.name === 'AbortError'){
+      console.log('Requête annulée (changement rapide)');
+      return;
+    }
+    console.error('updateChart:', e);
+    setStatus('Erreur: ' + e.message, true);
+    hideChartOverlay();
+  }finally{
+    state.isLoading = false;
+  }
+}
+
+/* ---------- APPLY CANDLES ---------- */
+function applyCandlesToChart(candles){
+  state.candleSeries.setData(candles.map(c=>({
+    time: c.time,
+    open: c.open,
+    high: c.high,
+    low:  c.low,
+    close:c.close
+  })));
+
+  state.volumeSeries.setData(candles.map(c=>({
+    time: c.time,
+    value: c.volume,
+    color: c.close >= c.open
+      ? 'rgba(0,255,157,0.45)'
+      : 'rgba(255,0,85,0.45)'
+  })));
+
+  state.chart.timeScale().fitContent();
 }
 
 /* ---------- WATCHLIST ---------- */
@@ -760,7 +1019,6 @@ async function renderWatchlist(){
     container.innerHTML = '<div class="loading"><i class="fas fa-circle-notch fa-spin" style="font-size:20px;margin-bottom:8px"></i>Chargement...</div>';
   }
 
-  // Chargement séquentiel avec délai pour éviter le rate limit
   const results = [];
   for(let i = 0; i < TICKERS.length; i++){
     try{
@@ -769,7 +1027,7 @@ async function renderWatchlist(){
     }catch(e){
       results.push({ status:'rejected', reason:e });
     }
-    await new Promise(r => setTimeout(r, 150)); // 150ms entre chaque requête
+    await new Promise(r => setTimeout(r, 150));
   }
 
   watchlistData = results.map((r, i) => ({
@@ -853,7 +1111,6 @@ function updateStats(q){
   elC.innerHTML = `${change>=0?'+':''}${change.toFixed(2)}%`;
   elC.className = `price-change ${change>=0?'text-green':'text-red'}`;
 
-  // Signal BUY/SELL/HOLD
   const badge = document.getElementById('signalBadge');
   if(change >= 1.5){
     badge.textContent = 'BUY ▲';
@@ -972,7 +1229,6 @@ async function renderOrderbook(ticker){
 
 /* ---------- NEWS ---------- */
 function renderNews(){
-  const now = new Date();
   const news = [
     { date:'LIVE',    title:'Flux MOEX ISS connecté — différé 15 min' },
     { date:'PROXY',   title:'Cloudflare Worker : moex.gunout.workers.dev' },
@@ -985,45 +1241,6 @@ function renderNews(){
       <div class="news-date"><i class="far fa-clock"></i>${n.date}</div>
       <div class="news-title">${n.title}</div>
     </div>`).join('');
-}
-
-/* ---------- UPDATE CHART ---------- */
-async function updateChart(ticker, timeframe){
-  if(state.isLoading) return;
-  state.isLoading = true;
-  setStatus(`Chargement ${ticker} ${timeframe}...`);
-
-  try{
-    const cfg  = TIMEFRAME_MAP[timeframe] || TIMEFRAME_MAP['1M'];
-    const till = new Date();
-    const from = new Date(Date.now() - cfg.days*86400000);
-
-    const candles = await fetchCandles(
-      ticker, cfg.interval, fmtDate(from), fmtDate(till)
-    );
-
-    if(candles.length === 0) throw new Error('Aucune bougie');
-
-    state.candleSeries.setData(candles.map(c=>({
-      time:c.time, open:c.open, high:c.high, low:c.low, close:c.close
-    })));
-
-    state.volumeSeries.setData(candles.map(c=>({
-      time:c.time,
-      value:c.volume,
-      color: c.close >= c.open
-        ? 'rgba(0,255,157,0.5)'
-        : 'rgba(255,0,85,0.5)'
-    })));
-
-    state.chart.timeScale().fitContent();
-    setStatus(`OK — ${candles.length} bougies`);
-  }catch(e){
-    console.error('updateChart:', e);
-    setStatus('Erreur: ' + e.message, true);
-  }finally{
-    state.isLoading = false;
-  }
 }
 
 /* ---------- SELECT TICKER ---------- */
@@ -1050,14 +1267,19 @@ async function selectTicker(ticker){
   renderFilteredWatchlist();
 }
 
-/* ---------- TIMEFRAMES ---------- */
+/* ---------- TIMEFRAMES (avec debounce) ---------- */
 function setupTimeframes(){
+  let debounceTimer;
   document.querySelectorAll('.timeframe-btn').forEach(btn=>{
-    btn.addEventListener('click', async e=>{
+    btn.addEventListener('click', e=>{
       document.querySelectorAll('.timeframe-btn').forEach(b=>b.classList.remove('active'));
       e.target.classList.add('active');
       state.currentTimeframe = e.target.dataset.timeframe;
-      await updateChart(state.currentTicker, state.currentTimeframe);
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(()=>{
+        updateChart(state.currentTicker, state.currentTimeframe);
+      }, 250);
     });
   });
 }
@@ -1086,7 +1308,6 @@ async function updateIMOEX(){
 /* ---------- MOSCOW CLOCK ---------- */
 function updateMoscowClock(){
   const now = new Date();
-  // Moscou = UTC+3
   const moscow = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
   const hh = String(moscow.getHours()).padStart(2,'0');
   const mm = String(moscow.getMinutes()).padStart(2,'0');
@@ -1096,7 +1317,6 @@ function updateMoscowClock(){
 
 /* ---------- AUTO REFRESH ---------- */
 function startRefreshLoop(){
-  // Quote + orderbook toutes les 45s
   setInterval(async ()=>{
     try{
       const q = await fetchQuote(state.currentTicker);
@@ -1105,13 +1325,8 @@ function startRefreshLoop(){
     }catch(e){ console.warn('refresh err', e); }
   }, 45000);
 
-  // Watchlist toutes les 90s
   setInterval(renderWatchlist, 90000);
-
-  // IMOEX toutes les 60s
   setInterval(updateIMOEX, 60000);
-
-  // Horloge Moscou toutes les secondes
   setInterval(updateMoscowClock, 1000);
 }
 
